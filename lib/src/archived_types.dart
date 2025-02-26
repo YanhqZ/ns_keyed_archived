@@ -7,6 +7,8 @@ import 'uid.dart';
 /// des:
 ///
 ///
+const nsKeyedArchiveVersion = 100000;
+
 class CycleToken {
   const CycleToken();
 }
@@ -63,5 +65,3 @@ class SetArchive {
     return uidSet.map((e) => archivedObj.decodeIndex(e)).toSet();
   }
 }
-
-

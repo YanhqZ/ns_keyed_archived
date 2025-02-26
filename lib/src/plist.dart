@@ -1,10 +1,11 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:ns_keyed_archived/src/plist_binary_parser.dart';
 import 'package:ns_keyed_archived/src/plist_xml_parser.dart';
 import 'package:ns_keyed_archived/src/utf16.dart';
+
+import 'plist_binary_writer.dart';
 
 /// create by: YanHq
 /// create time: 2025/1/16
@@ -31,20 +32,28 @@ enum FMT {
   xml(
     isDetect: isFmtXml,
     parserBuilder: PlistXmlParser.new,
+    writerBuilder: PlistBinaryWriter.new,
   ),
   binary(
     isDetect: isFmtBinary,
     parserBuilder: PlistBinaryParser.new,
+    writerBuilder: PlistBinaryWriter.new,
   );
 
   final bool Function(Uint8List header) isDetect;
   final PlistFMTParser Function() parserBuilder;
+  final PlistFMTWriter Function() writerBuilder;
 
-  const FMT({required this.isDetect, required this.parserBuilder});
+  const FMT(
+      {required this.isDetect, required this.parserBuilder, required this.writerBuilder,});
 }
 
 abstract class PlistFMTParser {
   Map parse(Uint8List archived);
+}
+
+abstract class PlistFMTWriter {
+  Uint8List write(Map data);
 }
 
 enum FmtXMLEncoding { utf8, utf16be, utf16le }
@@ -106,6 +115,6 @@ class Plist {
   }
 
   static Uint8List dumps(Map data, {required FMT fmt}) {
-    return Uint8List(0);
+    return fmt.writerBuilder.call().write(data);
   }
 }

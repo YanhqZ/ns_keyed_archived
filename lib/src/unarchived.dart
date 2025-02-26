@@ -1,25 +1,29 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'plist.dart';
+import 'package:ns_keyed_archived/src/archived.dart';
+
 import 'archived_types.dart';
+import 'plist.dart';
 import 'uid.dart';
 
 /// create by: YanHq
 /// create time: 2025/1/16
 /// des:
 ///
-const nsKeyedArchiveVersion = 100000;
-
 class NSKeyedArchiver {
   NSKeyedArchiver._();
 
   static dynamic unarchive(File file) {
-    return Unarchive(file.readAsBytesSync()).getTopObject();
+    return unarchiveFromByte(file.readAsBytesSync());
+  }
+
+  static dynamic unarchiveFromByte(Uint8List bytes) {
+    return Unarchive(bytes).getTopObject();
   }
 
   static Uint8List archive(Object object) {
-    return Uint8List(0);
+    return Archive(input: object).toBytes();
   }
 }
 
@@ -120,102 +124,4 @@ class Unarchive {
     unpackedUidMap[index] = obj;
     return obj;
   }
-}
-
-class Archive {
-  final primitiveTypes = [int, double, bool, String, Uint8List, UID];
-  final inlineTypes = [int, double, bool];
-
-  dynamic input;
-  dynamic classMap = {};
-  dynamic refMap = <int, UID>{};
-  List objects = ['\$null'];
-
-  Uint8List toBytes() {
-    if (objects.length == 1) {
-      archive(input);
-    }
-    final d = {
-      '\$archiver': 'NSKeyedArchiver',
-      '\$version': nsKeyedArchiveVersion,
-      '\$top': {'root': UID(1)},
-      '\$objects': objects,
-    };
-    return Plist.dumps(d, fmt: FMT.xml);
-  }
-
-  UID archive(dynamic obj) {
-    if (obj == null) {
-      return UID.nullUID;
-    }
-    final ref = refMap[obj.hashCode];
-    if (ref != null) {
-      return ref;
-    }
-
-    final index = UID(objects.length);
-    refMap[obj.hashCode] = index;
-
-    final cls = obj.runtimeType;
-    if (primitiveTypes.contains(cls)) {
-      objects.add(obj);
-      return index;
-    }
-
-    final archiveObj = <String, Object>{};
-    objects.add(archiveObj);
-    encodeTopLevel(obj, archiveObj);
-    return index;
-  }
-
-  void encodeTopLevel(dynamic obj, Map<String, Object> archiveObj) {
-    if (obj is List) {
-      encodeList(obj, archiveObj);
-    } else if (obj is Map) {
-      encodeMap(obj, archiveObj);
-    } else if (obj is Set) {
-      encodeSet(obj, archiveObj);
-    } else {
-
-    }
-  }
-
-  encodeList(List obj, Map<String, Object> archiveObj) {
-    final archiverUID = uidForArchiver('NSArray');
-    archiveObj['\$class'] = archiverUID;
-    archiveObj['NS.objects'] = obj.map((e) => archive(e)).toList();
-  }
-
-  encodeMap(Map obj, Map<String, Object> archiveObj) {
-    final archiverUID = uidForArchiver('NSDictionary');
-    archiveObj['\$class'] = archiverUID;
-    archiveObj['NS.keys'] = obj.keys.map((e) => archive(e)).toList();
-    archiveObj['NS.objects'] = obj.values.map((e) => archive(e)).toList();
-  }
-
-  encodeSet(Set obj, Map<String, Object> archiveObj) {
-    final archiverUID = uidForArchiver('NSSet');
-    archiveObj['\$class'] = archiverUID;
-    archiveObj['NS.objects'] = obj.map((e) => archive(e)).toList();
-  }
-
-
-
-
-  UID uidForArchiver(dynamic archiver) {
-    var value = classMap[archiver];
-    if (value != null) {
-      return value;
-    }
-
-    value = UID(objects.length);
-    classMap[archiver] = value;
-    objects.add({
-      '\$classes': [archiver],
-      '\$classname': archiver,
-    });
-
-    return value;
-  }
-
 }
