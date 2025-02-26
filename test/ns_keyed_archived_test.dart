@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
 import 'package:ns_keyed_archived/src/unarchived.dart';
 
 Future<void> main() async {
@@ -16,17 +17,19 @@ Future<void> main() async {
     'password': '111111',
   };
   obj = {'windows', 'macOS', 'linux'};
+
+  debugPrint('origin: $obj');
   var bytes = NSKeyedArchiver.archive(obj);
-  print('main archive: $bytes');
+  debugPrint('archive: $bytes');
   final result = NSKeyedArchiver.unarchiveFromByte(bytes);
-  print('main unarchive: $result');
+  debugPrint('unarchive: $result');
   if (result is List) {
-    print('main equality: ${const IterableEquality().equals(obj, result)}');
+    debugPrint('equality: ${const IterableEquality().equals(obj, result)}');
   } else if (result is Map) {
-    print('main equality: ${const MapEquality().equals(obj, result)}');
+    debugPrint('equality: ${const MapEquality().equals(obj, result)}');
   } else if (result is Set) {
-    print('main equality: ${const SetEquality().equals(obj, result)}');
+    debugPrint('equality: ${const SetEquality().equals(obj, result)}');
   } else {
-    print('main equality: ${obj == result}');
+    debugPrint('equality: ${obj == result}');
   }
 }
