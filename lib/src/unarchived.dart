@@ -23,7 +23,7 @@ class NSKeyedArchiver {
   }
 
   static Uint8List archive(Object object) {
-    return Archive(input: object).toBytes();
+    return Archive(input: object).toBytes(fmt: FMT.binary);
   }
 }
 

@@ -18,7 +18,7 @@ class Archive {
 
   Archive({required this.input}) : objects = ['\$null'];
 
-  Uint8List toBytes() {
+  Uint8List toBytes({required FMT fmt}) {
     if (objects.length == 1) {
       archive(input);
     }
@@ -28,7 +28,7 @@ class Archive {
       '\$objects': objects,
       '\$top': {'root': UID(1)}
     };
-    return FMT.binary.writerBuilder.call().write(d);
+    return fmt.writerBuilder.call().write(d);
   }
 
   UID archive(dynamic obj) {

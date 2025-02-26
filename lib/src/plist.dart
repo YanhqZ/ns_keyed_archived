@@ -6,6 +6,7 @@ import 'package:ns_keyed_archived/src/plist_xml_parser.dart';
 import 'package:ns_keyed_archived/src/utf16.dart';
 
 import 'plist_binary_writer.dart';
+import 'plist_xml_writer.dart';
 
 /// create by: YanHq
 /// create time: 2025/1/16
@@ -32,7 +33,7 @@ enum FMT {
   xml(
     isDetect: isFmtXml,
     parserBuilder: PlistXmlParser.new,
-    writerBuilder: PlistBinaryWriter.new,
+    writerBuilder: PlistXmlWriter.new,
   ),
   binary(
     isDetect: isFmtBinary,
@@ -44,8 +45,11 @@ enum FMT {
   final PlistFMTParser Function() parserBuilder;
   final PlistFMTWriter Function() writerBuilder;
 
-  const FMT(
-      {required this.isDetect, required this.parserBuilder, required this.writerBuilder,});
+  const FMT({
+    required this.isDetect,
+    required this.parserBuilder,
+    required this.writerBuilder,
+  });
 }
 
 abstract class PlistFMTParser {

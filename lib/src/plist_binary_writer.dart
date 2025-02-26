@@ -59,8 +59,8 @@ class PlistBinaryWriter extends PlistFMTWriter {
       if (objTable.containsKey((data.runtimeType, data))) {
         return;
       }
-    } else {
-      objIdTable.containsKey(data.hashCode);
+    } else if (objIdTable.containsKey(data.hashCode)) {
+      return;
     }
     final refNum = objList.length;
     objList.add(data);
@@ -206,7 +206,6 @@ class PlistBinaryWriter extends PlistFMTWriter {
   writeObject(dynamic value) {
     final ref = getRefNum(value);
     objectOffsets[ref] = bytes.length;
-
     if (value == null) {
       writeInts(ascii.encode('\x00'), byteSize: 1);
     } else if (value is bool) {
