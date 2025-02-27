@@ -2,7 +2,15 @@
 
 A Flutter plugin for Apple's Binary Plist and the NSKeyedArchiver/NSKeyedUnarchiver format. 
 Inspired by the [bpylist2](https://github.com/parabolala/bpylist2) package.
-**int, double, bool, String, List, Map, and Set** values are supported to archive and unarchive back.
+
+These types are supported to archive and unarchive back:
+* int
+* double
+* bool
+* String
+* List
+* Map
+* Set
 
 ## Getting started
 
@@ -14,7 +22,7 @@ This will add a line like this to your package's pubspec.yaml
 ```yaml
 dependencies:
   ....
-  ns_keyed_archiver: ^0.0.1
+  ns_keyed_archiver: ^0.0.2
 ```
 
 ## Usage
@@ -35,8 +43,8 @@ void main() {
   
   // unarchive the byte array back to the original data
   // 
-  // You can also use NSKeyedArchiver.unarchive(File) to unarchive from a file
-  final decoded = NSKeyedArchiver.unarchiveFromByte(bytes);
+  // You can use NSKeyedArchiver.unarchive(file.readAsBytesSync()) to unarchive from a file
+  final decoded = NSKeyedArchiver.unarchive(bytes);
   
   assert(data == decoded);
 }
