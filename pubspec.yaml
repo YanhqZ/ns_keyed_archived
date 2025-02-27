@@ -1,7 +1,7 @@
 name: ns_keyed_archived
-description: "A new Flutter project."
+description: "A Flutter plugin for Apple's Binary Plist and the NSKeyedArchiver/NSKeyedUnarchiver format"
 version: 0.0.1
-homepage:
+homepage: https://github.com/YanhqZ/ns_keyed_archived.git
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
