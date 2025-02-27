@@ -205,11 +205,11 @@ class PlistBinaryWriter extends PlistFMTWriter {
       }
     } else if (value is double) {
       _writeIntToByteData(0x23);
-      _writeDoubleToByteData(value, byteSize: BitSize.bit32);
+      _writeDoubleToByteData(value, byteSize: BitSize.bit64);
     } else if (value is DateTime) {
       final s = value.difference(DateTime.utc(2001, 1, 1)).inSeconds;
       _writeIntToByteData(0x33);
-      _writeDoubleToByteData(s.toDouble(), byteSize: BitSize.bit32);
+      _writeDoubleToByteData(s.toDouble(), byteSize: BitSize.bit64);
     } else if (value is Uint8List) {
       _writeSize(0x40, value.length);
     } else if (value is String) {
