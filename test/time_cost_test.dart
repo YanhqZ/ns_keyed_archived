@@ -35,7 +35,7 @@ void main() {
 
     final start = DateTime.now();
     for (int i = 0; i < 10000; i++) {
-      NSKeyedArchiver.unarchiveFromByte(bytes);
+      NSKeyedArchiver.unarchive(bytes);
     }
     debugPrint(
       'read 10,000 times cost: '
