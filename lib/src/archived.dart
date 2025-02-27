@@ -1,8 +1,8 @@
 import 'dart:core';
 import 'dart:typed_data';
 
-import 'package:ns_keyed_archived/src/archived_types.dart';
-import 'package:ns_keyed_archived/src/uid.dart';
+import 'package:ns_keyed_archived/src/native_types/archived_types.dart';
+import 'package:ns_keyed_archived/src/native_types/uid.dart';
 
 import 'plist.dart';
 
@@ -18,7 +18,7 @@ class Archive {
 
   Archive({required this.input}) : objects = ['\$null'];
 
-  Uint8List toBytes({required FMT fmt}) {
+  Uint8List toBytes() {
     if (objects.length == 1) {
       archive(input);
     }
@@ -28,7 +28,7 @@ class Archive {
       '\$objects': objects,
       '\$top': {'root': UID(1)}
     };
-    return fmt.writerBuilder.call().write(d);
+    return FMT.binary.writerBuilder.call().write(d);
   }
 
   UID archive(dynamic obj) {

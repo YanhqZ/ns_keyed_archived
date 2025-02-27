@@ -1,16 +1,18 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'plist.dart';
-import 'uid.dart';
-import 'utf16.dart';
+import 'package:ns_keyed_archived/src/tools/byte_data_ext.dart';
+
+import '../plist.dart';
+import '../native_types/uid.dart';
+import '../tools/utf16.dart';
 
 /// create by: YanHq
 /// create time: 2025/1/17
 /// des:
 ///
 class PlistBinaryParser implements PlistFMTParser {
-  late ByteData archive;
+  late ByteData byteData;
   late int _refSize;
   late List<int> _objectOffsets;
   late List<dynamic> _objects;
@@ -22,7 +24,7 @@ class PlistBinaryParser implements PlistFMTParser {
     if (pOffset <= 0) {
       throw Exception("Invalid file");
     }
-    archive = ByteData.sublistView(data);
+    byteData = ByteData.sublistView(data);
     final trailer = ByteData.sublistView(data.sublist(pOffset));
     final offsetSize = trailer.getUint8(6);
     _refSize = trailer.getUint8(7);
@@ -40,19 +42,20 @@ class PlistBinaryParser implements PlistFMTParser {
 
   List<int> _readInts(int n, int size) {
     final result = <int>[];
-    if ({1, 2, 4, 8}.contains(size)) {
+    final bitSize = BitSize.fromSize(size);
+    if (bitSize != null) {
       for (int i = 0; i < n; i++) {
-        result.add(_bytesToInt(size));
+        result.add(_bytesToInt(bitSize: bitSize));
       }
     } else {
       if (size == 0) {
         throw Exception("Invalid file");
       }
-      final ByteData byteData = archive.buffer.asByteData(pOffset, size * n);
+      final ByteData tmpByteData = byteData.buffer.asByteData(pOffset, size * n);
       for (int i = 0; i < size * n; i += size) {
         int value = 0;
         for (int j = 0; j < size; j++) {
-          value = (value << 8) + byteData.getUint8(i + j);
+          value = (value << 8) + tmpByteData.getUint8(i + j);
         }
         result.add(value);
       }
@@ -69,7 +72,7 @@ class PlistBinaryParser implements PlistFMTParser {
 
     final offset = _objectOffsets[ref];
     pOffset = offset;
-    final token = archive.buffer.asUint8List(pOffset, 1)[0];
+    final token = byteData.buffer.asUint8List(pOffset, 1)[0];
     pOffset += 1;
     final tokenH = token & 0xF0;
     final tokenL = token & 0x0F;
@@ -84,39 +87,43 @@ class PlistBinaryParser implements PlistFMTParser {
       result = ascii.encode('');
     } else if (tokenH == 0x10) {
       // int
-      final size = 1 << tokenL;
-      result = _bytesToInt(size, signed: tokenL >= 3);
+      final size = BitSize.fromSize(1 << tokenL);
+      if (size != null) {
+        result = _bytesToInt(bitSize: size, signed: tokenL >= 3);
+      }
     } else if (token == 0x22) {
       // double
-      result = _bytesToDouble(4);
+      result = _bytesToDouble(BitSize.bit32);
     } else if (token == 0x23) {
       // double
-      result = _bytesToDouble(8);
+      result = _bytesToDouble(BitSize.bit64);
     } else if (token == 0x33) {
       // date
-      var seconds = _bytesToDouble(8);
+      var seconds = _bytesToDouble(BitSize.bit64);
       // timestamp 0 of binary plist corresponds to 1/1/2001 (year of Mac OS X 10.0), instead of 1/1/1970.
       var date = DateTime(2001, 1, 1).add(Duration(seconds: seconds.toInt()));
       return date.add(date.timeZoneOffset).toUtc();
     } else if (tokenH == 0x40) {
       // data
       final size = _getSize(tokenL);
-      result = archive.buffer.asUint8List(pOffset, size);
+      result = byteData.buffer.asUint8List(pOffset, size);
       pOffset += size;
     } else if (tokenH == 0x50) {
       // ascii string
       final size = _getSize(tokenL);
-      result = ascii.decode(archive.buffer.asUint8List(pOffset, size));
+      result = ascii.decode(byteData.buffer.asUint8List(pOffset, size));
       pOffset += size;
     } else if (tokenH == 0x60) {
       // unicode string
       final size = _getSize(tokenL);
-      result = utf16be.decode(archive.buffer.asUint8List(pOffset, size * 2));
+      result = utf16be.decode(byteData.buffer.asUint8List(pOffset, size * 2));
       pOffset += size * 2;
     } else if (tokenH == 0x80) {
       // uid
-      final size = 1 + tokenL;
-      result = UID(_bytesToInt(size));
+      final size = BitSize.fromSize(1 + tokenL);
+      if (size != null) {
+        result = UID(_bytesToInt(bitSize: size));
+      }
     } else if (tokenH == 0xA0) {
       // array
       final size = _getSize(tokenL);
@@ -147,38 +154,39 @@ class PlistBinaryParser implements PlistFMTParser {
 
   int _getSize(int tokenL) {
     if (tokenL == 0xF) {
-      final m = archive.buffer.asInt8List(pOffset, 1)[0] & 0x3;
+      final m = byteData.buffer.asInt8List(pOffset, 1)[0] & 0x3;
       pOffset += 1;
-      final s = 1 << m;
-      return _bytesToInt(s);
+      final s = BitSize.fromSize(1 << m);
+      if (s != null) {
+        return _bytesToInt(bitSize: s);
+      }
     }
     return tokenL;
   }
 
-  int _bytesToInt(int byteSize, {int offset = 0, bool signed = false}) {
-    final byteData = ByteData.view(archive.buffer, pOffset, byteSize);
-    final result = switch (byteSize) {
-      1 => signed ? byteData.getInt8(offset) : byteData.getUint8(offset),
-      2 => signed ? byteData.getInt16(offset) : byteData.getUint16(offset),
-      4 => signed ? byteData.getInt32(offset) : byteData.getUint32(offset),
-      8 => signed ? byteData.getInt64(offset) : byteData.getUint64(offset),
-      _ => throw Exception("Undefined ByteSize: $byteSize"),
-    };
-    pOffset += byteSize;
+  int _bytesToInt({
+    int offset = 0,
+    bool signed = false,
+    BitSize bitSize = BitSize.bit8,
+  }) {
+    final result = byteData.read(
+      byteSize: bitSize,
+      offset: pOffset + offset,
+      signed: signed,
+    );
+    pOffset += bitSize.size;
     return result;
   }
 
   double _bytesToDouble(
-    int byteSize, {
+    BitSize byteSize, {
     int offset = 0,
   }) {
-    final byteData = ByteData.view(archive.buffer, pOffset, byteSize);
-    final result = switch (byteSize) {
-      4 => byteData.getFloat32(offset),
-      8 => byteData.getFloat64(offset),
-      _ => throw Exception("Undefined ByteSize: $byteSize"),
-    };
-    pOffset += byteSize;
+    final result = byteData.readDouble(
+      byteSize: byteSize,
+      offset: pOffset + offset,
+    );
+    pOffset += byteSize.size;
     return result;
   }
 }

@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:xml/xml.dart';
 
-import 'plist.dart';
+import '../plist.dart';
 
 /// create by: YanHq
 /// create time: 2025/1/17

@@ -1,31 +1,14 @@
-import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:ns_keyed_archived/src/archived.dart';
-
-import 'archived_types.dart';
+import 'native_types/archived_types.dart';
+import 'native_types/uid.dart';
 import 'plist.dart';
-import 'uid.dart';
 
 /// create by: YanHq
 /// create time: 2025/1/16
 /// des:
 ///
-class NSKeyedArchiver {
-  NSKeyedArchiver._();
 
-  static dynamic unarchive(File file) {
-    return unarchiveFromByte(file.readAsBytesSync());
-  }
-
-  static dynamic unarchiveFromByte(Uint8List bytes) {
-    return Unarchive(bytes).getTopObject();
-  }
-
-  static Uint8List archive(Object object) {
-    return Archive(input: object).toBytes(fmt: FMT.binary);
-  }
-}
 
 class Unarchive {
   final Uint8List archived;

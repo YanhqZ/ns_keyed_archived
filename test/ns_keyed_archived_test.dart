@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
-import 'package:ns_keyed_archived/src/unarchived.dart';
+import 'package:ns_keyed_archived/ns_keyed_archived.dart';
 
-Future<void> main() async {
+void main() {
   dynamic obj = jsonEncode({
     "account": "admin",
     "password": "111111",
@@ -15,6 +15,7 @@ Future<void> main() async {
   obj = {
     'account': 'admin',
     'password': '111111',
+    'role': 1,
   };
   obj = {'windows', 'macOS', 'linux'};
 

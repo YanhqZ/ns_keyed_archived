@@ -1,3 +1,3 @@
-library ns_keyed_archived;
+library;
 
-export 'src/unarchived.dart';
+export 'src/common/archiver.dart';
