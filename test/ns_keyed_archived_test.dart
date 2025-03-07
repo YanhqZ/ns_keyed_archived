@@ -7,6 +7,7 @@ void main() {
   test('String', () {
     String obj = jsonEncode({
       "account": "admin",
+      "alia": "颜",
       "password": "111111",
     });
     var bytes = NSKeyedArchiver.archive(obj);

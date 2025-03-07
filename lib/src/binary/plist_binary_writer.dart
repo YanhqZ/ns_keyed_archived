@@ -219,7 +219,7 @@ class PlistBinaryWriter extends PlistFMTWriter {
         _writeSize(0x50, value.length);
       } catch (e) {
         t = utf16be.encode(value);
-        _writeSize(0x60, value.length ~/ 2);
+        _writeSize(0x60, t.length ~/ 2);
       }
       _writeUint8ListToByteData(t);
     } else if (value is UID) {
