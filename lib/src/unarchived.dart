@@ -9,7 +9,6 @@ import 'plist.dart';
 /// des:
 ///
 
-
 class Unarchive {
   final Uint8List archived;
   final Map<UID, dynamic> unpackedUidMap = {};

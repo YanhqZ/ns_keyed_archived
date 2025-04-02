@@ -51,7 +51,8 @@ class PlistBinaryParser implements PlistFMTParser {
       if (size == 0) {
         throw Exception("Invalid file");
       }
-      final ByteData tmpByteData = byteData.buffer.asByteData(pOffset, size * n);
+      final ByteData tmpByteData =
+          byteData.buffer.asByteData(pOffset, size * n);
       for (int i = 0; i < size * n; i += size) {
         int value = 0;
         for (int j = 0; j < size; j++) {

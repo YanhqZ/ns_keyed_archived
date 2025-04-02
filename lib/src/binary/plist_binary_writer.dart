@@ -191,15 +191,9 @@ class PlistBinaryWriter extends PlistFMTWriter {
       } else if (value < 1 << 32) {
         _writeIntToByteData(0x12);
         _writeIntToByteData(value, byteSize: BitSize.bit32);
-      } else if (value < 1 << 63) {
+      } else if (value < (1 << 63) - 1) {
         _writeIntToByteData(0x13);
         _writeIntToByteData(value, byteSize: BitSize.bit64);
-      } else if (value < 1 << 64) {
-        _writeIntToByteData(0x14);
-        var highBits = (value >> 64) & 0xFFFFFFFFFFFFFFFF;
-        var lowBits = value & 0xFFFFFFFFFFFFFFFF;
-        _writeIntToByteData(highBits, byteSize: BitSize.bit64, signed: true);
-        _writeIntToByteData(lowBits, byteSize: BitSize.bit64, signed: true);
       } else {
         throw Exception('Integer too large');
       }
