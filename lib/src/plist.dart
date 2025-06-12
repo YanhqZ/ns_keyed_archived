@@ -94,6 +94,9 @@ bool _isFmtBinary(Uint8List header) {
 
 class Plist {
   static Map loads(Uint8List archived) {
+    if (archived.length < 32) {
+      return {};
+    }
     final header = archived.sublist(0, 32);
     for (final fmt in FMT.values) {
       if (fmt.isDetect.call(header)) {

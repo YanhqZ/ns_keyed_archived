@@ -26,6 +26,10 @@ class Unarchive {
   unpackArchiveHeader() {
     Map plist = Plist.loads(archived);
 
+    if (plist.isEmpty) {
+      return;
+    }
+
     final archiver = plist['\$archiver'];
     if (archiver != 'NSKeyedArchiver') {
       throw Exception('unsupported encoder: $archiver');
