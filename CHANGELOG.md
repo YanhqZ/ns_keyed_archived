@@ -1,3 +1,7 @@
+## 0.0.5
+
+* Return null when empty data unarchived.
+
 ## 0.0.4
 
 * fix int value binary-archive bug when value ≧ `1 << 32`.
